@@ -10,8 +10,8 @@
 
 using namespace cv;
 
-double cx = -2;//-0.79;
-double cy = -2;// 0.15;
+double cx = 0;//-0.79;
+double cy = 0;//0.15;
 
 int imWidth = 640;
 int imHeight = 640;
@@ -20,11 +20,15 @@ int iters = 100;
 
 double speed = 0.1;
 
-bool mandelbrot = false;
+bool mandelbrot = true;
 bool randomize = false;
 bool cycle = false;
 bool smallize = true;
 
+double lf = -2;
+double rg = 2;
+double up = -2;
+double dw = 2;
 
 //x + yi x + yi
 //xx
@@ -70,8 +74,11 @@ int main(int argc,char** argv){
 		double biggest = 0;
 		for(double i = 0;i < img.rows;i++){
 			for(double j = 0;j < img.cols;j++){
-				double x = (i - (imWidth/2))/(imWidth/4);
-				double y = (j - (imHeight/2))/(imHeight/4);
+				//double x = (i - (imWidth/2))/(imWidth/4);
+				//double y = (j - (imHeight/2))/(imHeight/4);
+				double x = rg - (i / imWidth) * (rg - lf);
+				double y = dw - (j /imHeight) * (dw - up);
+
 
 				double mag = 0;
 		
