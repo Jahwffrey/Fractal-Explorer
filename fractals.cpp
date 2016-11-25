@@ -117,15 +117,16 @@ void mouseFunc(int event, int x, int y, int flags,void * mouse){
 int main(int argc,char** argv){
 	bool cycle = false;
 	bool smallize = true;
+	bool mandel = false;
 
 	int mouse[3] = {0,0,-1};
 
 	int imWidth = 640;
 	int imHeight = 640;
-	//double cX = -.79;
-	double cX = 0;
-	//double cY = 0.15;
-	double cY = 0;
+	double cX = -.79;
+	//double cX = 0;
+	double cY = 0.15;
+//	double cY = 0;
 	double lf = -2;
 	double rg = 2;//-2;
 	double up = 2;
@@ -153,7 +154,7 @@ int main(int argc,char** argv){
 	while(true){
 		Mat img(imWidth,imHeight,CV_8UC3);
 	
-		displayFractal(img,lf,rg,up,dw,true,iterNum,cX,cY);	
+		displayFractal(img,lf,rg,up,dw,mandel,iterNum,cX,cY);	
 	
 		while(true){
 			Mat disp = img.clone();
@@ -164,11 +165,38 @@ int main(int argc,char** argv){
 
 			imshow("Fractal",disp);
 			char c = waitKey(5);
-			if(c == 'a'){
+			if(c == '1'){
+				iterNum+=5;
+				//cX = 0;
+				//cY = 0;
+				break;
+			}
+			if(c == '2'){
 				iterNum*=2;
 				//cX = 0;
 				//cY = 0;
 				break;
+			}
+			if(c == '3'){
+				iterNum/=2;
+				//cX = 0;
+				//cY = 0;
+				break;
+			}
+			if(c == '4'){
+				iterNum-=5;
+				//cX = 0;
+				//cY = 0;
+				break;
+			}
+			if(c == 'r'){
+				cX = (-5000 + (rand() % 10000))/5000.0;
+				cY = (-5000 + (rand() % 10000))/5000.0;
+				std::cout << "" << cX << " + " << cY << "i\n" << std::flush;
+				break;
+			}
+			if(c == 'c'){
+				drawSq = false;
 			}
 			//Check mouse
 			if(mouse[2] == EVENT_LBUTTONDOWN){
@@ -189,6 +217,16 @@ int main(int argc,char** argv){
 					up = nup;
 					dw = ndw;
 					sqW = 0;
+					if(!mandel){
+						nlf = getComplexCoord(img.cols,0,lf,rg);
+						nrg = getComplexCoord(img.cols,img.cols,lf,rg);
+						nup = -getComplexCoord(img.rows,img.rows,dw,up);
+						ndw = -getComplexCoord(img.rows,0,dw,up);
+						lf = nlf;
+						rg = nrg;
+						up = nup;
+						dw = ndw;	
+					}
 					break;
 				}
 			} else if(mouse[2] == EVENT_MOUSEMOVE){
@@ -202,8 +240,7 @@ int main(int argc,char** argv){
 			}
 		}
 		//if(randomize){
-			//cx = (-5000 + (rand() % 10000))/5000.0;
-			//cy = (-5000 + (rand() % 10000))/5000.0;
+			
 			//tx = cx;
 			//ty = cy;
 		//}
