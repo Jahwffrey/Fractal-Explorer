@@ -10,8 +10,8 @@
 
 using namespace cv;
 
-double cx = -0.79;
-double cy =  0.15;
+double cx = -2;//-0.79;
+double cy = -2;// 0.15;
 
 int imWidth = 640;
 int imHeight = 640;
@@ -19,10 +19,12 @@ int imHeight = 640;
 int iters = 100;
 
 double speed = 0.1;
+
+bool mandelbrot = false;
+bool randomize = false;
 bool cycle = false;
 bool smallize = true;
 
-bool mandelbrot = false;
 
 //x + yi x + yi
 //xx
@@ -143,8 +145,12 @@ int main(int argc,char** argv){
 
 		//iters++;
 
-		//cx = (-5000 + (rand() % 10000))/5000.0;
-		//cy = (-5000 + (rand() % 10000))/5000.0;
+		if(randomize){
+			cx = (-5000 + (rand() % 10000))/5000.0;
+			cy = (-5000 + (rand() % 10000))/5000.0;
+			tx = cx;
+			ty = cy;
+		}
 
 		imshow("Fractal",img);
 		waitKey(5);
