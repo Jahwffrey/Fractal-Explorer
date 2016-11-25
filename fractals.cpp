@@ -7,6 +7,8 @@
 #include <fstream>
 #include <time.h>
 
+#define PI 3.141592
+
 using namespace cv;
 
 double calcReal(double x,double y,double x2,double y2){
@@ -26,18 +28,24 @@ double magnitude(double x,double y){
 char getR(int num,int mode){
 	if(mode == 0) return (num % 127) * (255/127);
 	if(mode == 1) return (tan((double)num/16) + 1) * 127;
+	if(mode == 2) return 255 * ((sin((double)num*PI/64) + 1)/2.0);
+	if(mode == 3) return 255 * ((sin((double)num*PI/16) + 1)/2.0);
 	return 255;
 }
 
 char getG(int num,int mode){
 	if(mode == 0) return (num % 63) * (255/63);
 	if(mode == 1) return (sin((double)num/16) + 1) * 127;
+	if(mode == 2) return 255 * ((sin((double)num*PI/64 + ((2/3.0)*PI) ) + 1)/2.0);
+	if(mode == 3) return 255 * ((sin((double)num*PI/16 + ((2/3.0)*PI) ) + 1)/2.0);
 	return 255;
 }
 
 char getB(int num,int mode){
 	if(mode == 0) return (num % 31) * (255/31);
 	if(mode == 1) return (cos((double)num/16) + 1) * 127;
+	if(mode == 2) return 255 * ((sin((double)num*PI/64 + ((4/3.0)*PI) ) + 1)/2.0);
+	if(mode == 3) return 255 * ((sin((double)num*PI/16 + ((4/3.0)*PI) ) + 1)/2.0);
 	return 255;
 }
 
@@ -145,7 +153,7 @@ int main(int argc,char** argv){
 	int sqY = 0;
 	int sqW = 0;
 
-	int colorMode = 0;
+	int colorMode = 1;
 
 	bool drawSq = false;
 
@@ -223,7 +231,7 @@ int main(int argc,char** argv){
 				break;
 			}
 			if(c == 'n'){
-				colorMode = (colorMode + 1) % 4;
+				colorMode = (colorMode + 1) % 5;
 				break;
 			}
 			if(c == 'q'){
