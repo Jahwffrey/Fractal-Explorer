@@ -40,13 +40,13 @@ double getComplexCoord(double imgLen,int imgCoord, double low, double high){
 	return low - (imgCoord/imgLen) * (low - high);
 }
 
-void displayFractal(Mat img,double rg,double lf,double up,double dw,bool mandel,int iters,double cx, double cy){
+void displayFractal(Mat img,double lf,double rg,double up,double dw,bool mandel,int iters,double cx, double cy){
 	double tx = cx;
 	double ty = cy;
 	for(double i = 0;i < img.rows;i++){
 		for(double j = 0;j < img.cols;j++){
-			double x = getComplexCoord(img.rows,i,rg,lf);//rg - (i / img.rows) * (rg - lf);
-			double y = getComplexCoord(img.cols,j,dw,up);//dw - (j /img.cols) * (dw - up);
+			double x = getComplexCoord(img.cols,j,lf,rg);//rg - (i / img.rows) * (rg - lf);
+			double y = -getComplexCoord(img.rows,i,dw,up);//dw - (j /img.cols) * (dw - up);
 
 			double mag = 0;
 			char r = 0;
@@ -100,6 +100,7 @@ void displayFractal(Mat img,double rg,double lf,double up,double dw,bool mandel,
 void mouseFunc(int event, int x, int y, int flags,void * mouse){
 	int * m = (int *)mouse;
 	if (event == EVENT_LBUTTONDOWN){
+		std::cout << "X: " << x << ", Y: " << y << "\n" << std::flush;
 		*m = x;
 		*(m + 1) = y;
 		*(m + 2) = EVENT_LBUTTONDOWN;
@@ -122,10 +123,15 @@ int main(int argc,char** argv){
 
 	int imWidth = 640;
 	int imHeight = 640;
-	double cX = -.79;
-	//double cX = 0;
-	double cY = 0.15;
-	//double cY = 0;
+	//double cX = -.79;
+	double cX = 0;
+	//double cY = 0.15;
+	double cY = 0;
+	double lf = -2;
+	double rg = 2;//-2;
+	double up = 2;
+	double dw = -2;//-2;
+
 
 	int sqX = 0;
 	int sqY = 0;
@@ -148,7 +154,7 @@ int main(int argc,char** argv){
 	while(true){
 		Mat img(imWidth,imHeight,CV_8UC3);
 	
-		displayFractal(img,-2,2,-2,2,false,iterNum,cX,cY);	
+		displayFractal(img,lf,rg,up,dw,true,iterNum,cX,cY);	
 	
 		while(true){
 			Mat disp = img.clone();
@@ -168,22 +174,37 @@ int main(int argc,char** argv){
 			//Check mouse
 			if(mouse[2] == EVENT_LBUTTONDOWN){
 				if(drawSq == false){
+					std::cout << "(" << lf << "," << up << ") (" << rg << "," << dw << ")\n" << std::flush;
 					drawSq = true;
 					sqX = mouse[0];
 					sqY = mouse[1];
 					mouse[2] = -1;
 				} else {
 					drawSq = false;
-					sqW = 0;
 					mouse[2] = -1;
+					double nlf = getComplexCoord(img.cols,sqX,lf,rg);
+					double nrg = getComplexCoord(img.cols,sqX + sqW,lf,rg);
+					double ndw = -getComplexCoord(img.rows,sqY,dw,up);
+					double nup = -getComplexCoord(img.rows,sqY + sqW,dw,up);
+					lf = nlf;
+					rg = nrg;
+					up = nup;
+					dw = ndw;
+					sqW = 0;
+					std::cout << "(" << lf << "," << up << ") (" << rg << "," << dw << ")\n" << std::flush;
+					break;
 				}
 			} else if(mouse[2] == EVENT_MOUSEMOVE){
+				std::cout << "(" << getComplexCoord(img.cols,mouse[0],lf,rg) << "," << -getComplexCoord(img.rows,mouse[1],dw,up) << ")" <<
+				       " (" << mouse[0] << "," << mouse[1] << ")\n" << std::flush;	
 				mouse[2] = -1;
 				if(drawSq == true){
 					int hW = mouse[0] - sqX;
 					int vW = mouse[1] - sqY;
 					sqW = hW;
 					if(vW > hW) sqW = vW;
+					std::cout << "(" << getComplexCoord(img.cols,sqX,lf,rg) << "," << getComplexCoord(img.rows,sqY,dw,up) << ")" << 
+						" (" << getComplexCoord(img.cols,sqX + sqW,lf,rg) << "," << getComplexCoord(img.rows,sqY + sqW,dw,up) << ")\n" << std::flush;
 				}
 			}
 		}
