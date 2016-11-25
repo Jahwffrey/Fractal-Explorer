@@ -10,12 +10,14 @@
 
 using namespace cv;
 
-double calcReal(double x,double y){
-	return pow(x,2) - pow(y,2);
+double calcReal(double x,double y,double x2,double y2){
+	//return pow(x,2) - pow(y,2);
+	return (x * x2) - (y * y2);
 }
 
-double calcImag(double x,double y){
-	return 2 * x * y;
+double calcImag(double x,double y,double x2, double y2){
+	//return 2 * x * y;
+	return (x * y2) + (y * x2); 
 }
 
 double magnitude(double x,double y){
@@ -55,8 +57,8 @@ void displayFractal(Mat img,double rg,double lf,double up,double dw,bool mandel,
 
 
 				for(int i = 0;i < iters;i++){
-					double valx = calcReal(x,y) + cx;
-					double valy = calcImag(x,y) + cy;
+					double valx = calcReal(x,y,x,y) + cx;
+					double valy = calcImag(x,y,x,y) + cy;
 					x = valx;
 					y = valy;
 					mag = magnitude(x,y);
@@ -69,8 +71,8 @@ void displayFractal(Mat img,double rg,double lf,double up,double dw,bool mandel,
 				}
 			} else {
 				for(int i = 0;i < iters;i++){
-					double valx = calcReal(x,y) + cx;
-					double valy = calcImag(x,y) + cy;
+					double valx = calcReal(x,y,x,y) + cx;
+					double valy = calcImag(x,y,x,y) + cy;
 					x = valx;
 					y = valy;
 					mag = magnitude(x,y);
@@ -91,17 +93,44 @@ void displayFractal(Mat img,double rg,double lf,double up,double dw,bool mandel,
 	}
 }
 
-int main(int argc,char** argv){
-	int imWidth = 640;
-	int imHeight = 640;
+void mouseFunc(int event, int x, int y, int flags,void * mouse){
+	int * m = (int *)mouse;
+	if (event == EVENT_LBUTTONDOWN){
+		std::cout << "Left button of the mouse is clicked - position (" << x << ", " << y << ")\n";
+		*m = x;
+		*(m + 1) = y;
+		*(m + 2) = EVENT_LBUTTONDOWN;
+	} else if (event == EVENT_RBUTTONDOWN) {
+		std::cout << "Right button of the mouse is clicked - position (" << x << ", " << y << ")\n";
+	} else if (event == EVENT_MBUTTONDOWN) {
+		std::cout << "Middle button of the mouse is clicked - position (" << x << ", " << y << ")\n";
+	} else if (event == EVENT_MOUSEMOVE) {
+		std::cout << "Mouse move over the window - position (" << x << ", " << y << ")\n";
+	}
+}
 
+int main(int argc,char** argv){
 	bool cycle = false;
 	bool smallize = true;
+
+	int mouse[3] = {0,0,-1};
+
+	int imWidth = 640;
+	int imHeight = 640;
+	double cX = -.79;
+	double cY = 0.15;
+
+	int sqX = 0;
+	int sqY = 0;
+	bool drawSq = false;
 
 	if(cycle && smallize){
 		imWidth /= 4;
 		imHeight /= 4;
 	}
+
+	namedWindow("Fractal",1);
+	setMouseCallback("Fractal", mouseFunc, mouse);
 
 	srand(time(NULL));
 
@@ -109,12 +138,30 @@ int main(int argc,char** argv){
 	while(true){
 		Mat img(imWidth,imHeight,CV_8UC3);
 	
-//void displayFractal(Mat img,double rg,double lf,double up,double dw,bool mandel,int iters){
+		displayFractal(img,-2,2,-2,2,true,100,cX,cY);	
+	
+		while(true){
+			Mat disp = img.clone();
 
-		displayFractal(img,-2,2,-2,2,false,100,-.79,0.15);	
+			if(drawSq){
+				rectangle(disp,Rect(sqX,sqY,100,100),Scalar(255,255,255));
+			}
 
-		//iters++;
-
+			imshow("Fractal",disp);
+			char c = waitKey(5);
+			if(c == 'a'){
+				cX = 0;
+				cY = 0;
+				break;
+			}
+			//Check mouse
+			if(mouse[2] == EVENT_LBUTTONDOWN){
+				drawSq = true;
+				sqX = mouse[0];
+				sqY = mouse[1];
+				mouse[2] = -1;
+			}
+		}
 		//if(randomize){
 			//cx = (-5000 + (rand() % 10000))/5000.0;
 			//cy = (-5000 + (rand() % 10000))/5000.0;
@@ -122,8 +169,6 @@ int main(int argc,char** argv){
 			//ty = cy;
 		//}
 
-		imshow("Fractal",img);
-		waitKey(5);
 		//if(cycle){
 			//if(mandelbrot){
 				//ty += speed;
