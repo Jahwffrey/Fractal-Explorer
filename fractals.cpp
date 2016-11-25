@@ -100,7 +100,6 @@ void displayFractal(Mat img,double lf,double rg,double up,double dw,bool mandel,
 void mouseFunc(int event, int x, int y, int flags,void * mouse){
 	int * m = (int *)mouse;
 	if (event == EVENT_LBUTTONDOWN){
-		std::cout << "X: " << x << ", Y: " << y << "\n" << std::flush;
 		*m = x;
 		*(m + 1) = y;
 		*(m + 2) = EVENT_LBUTTONDOWN;
@@ -166,7 +165,7 @@ int main(int argc,char** argv){
 			imshow("Fractal",disp);
 			char c = waitKey(5);
 			if(c == 'a'){
-				iterNum++;
+				iterNum*=2;
 				//cX = 0;
 				//cY = 0;
 				break;
@@ -174,7 +173,6 @@ int main(int argc,char** argv){
 			//Check mouse
 			if(mouse[2] == EVENT_LBUTTONDOWN){
 				if(drawSq == false){
-					std::cout << "(" << lf << "," << up << ") (" << rg << "," << dw << ")\n" << std::flush;
 					drawSq = true;
 					sqX = mouse[0];
 					sqY = mouse[1];
@@ -191,20 +189,15 @@ int main(int argc,char** argv){
 					up = nup;
 					dw = ndw;
 					sqW = 0;
-					std::cout << "(" << lf << "," << up << ") (" << rg << "," << dw << ")\n" << std::flush;
 					break;
 				}
 			} else if(mouse[2] == EVENT_MOUSEMOVE){
-				std::cout << "(" << getComplexCoord(img.cols,mouse[0],lf,rg) << "," << -getComplexCoord(img.rows,mouse[1],dw,up) << ")" <<
-				       " (" << mouse[0] << "," << mouse[1] << ")\n" << std::flush;	
 				mouse[2] = -1;
 				if(drawSq == true){
 					int hW = mouse[0] - sqX;
 					int vW = mouse[1] - sqY;
 					sqW = hW;
 					if(vW > hW) sqW = vW;
-					std::cout << "(" << getComplexCoord(img.cols,sqX,lf,rg) << "," << getComplexCoord(img.rows,sqY,dw,up) << ")" << 
-						" (" << getComplexCoord(img.cols,sqX + sqW,lf,rg) << "," << getComplexCoord(img.rows,sqY + sqW,dw,up) << ")\n" << std::flush;
 				}
 			}
 		}
