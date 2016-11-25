@@ -7,7 +7,6 @@
 #include <fstream>
 #include <time.h>
 
-
 using namespace cv;
 
 double calcReal(double x,double y,double x2,double y2){
@@ -24,23 +23,29 @@ double magnitude(double x,double y){
 	return sqrt(pow(x,2) - pow(y,2));
 }
 
-char getR(int num){
-	return (num % 127) * (255/127);
+char getR(int num,int mode){
+	if(mode == 0) return (num % 127) * (255/127);
+	if(mode == 1) return (tan((double)num/16) + 1) * 127;
+	return 255;
 }
 
-char getG(int num){
-	return (num % 63) * (255/63);
+char getG(int num,int mode){
+	if(mode == 0) return (num % 63) * (255/63);
+	if(mode == 1) return (sin((double)num/16) + 1) * 127;
+	return 255;
 }
 
-char getB(int num){
-	return (num % 31) * (255/31);
+char getB(int num,int mode){
+	if(mode == 0) return (num % 31) * (255/31);
+	if(mode == 1) return (cos((double)num/16) + 1) * 127;
+	return 255;
 }
 
 double getComplexCoord(double imgLen,int imgCoord, double low, double high){
 	return low - (imgCoord/imgLen) * (low - high);
 }
 
-void displayFractal(Mat img,double lf,double rg,double up,double dw,bool mandel,int iters,double cx, double cy){
+void displayFractal(Mat img,double lf,double rg,double up,double dw,bool mandel,int iters,double cx, double cy,int cmode){
 	double tx = cx;
 	double ty = cy;
 	for(double i = 0;i < img.rows;i++){
@@ -67,9 +72,9 @@ void displayFractal(Mat img,double lf,double rg,double up,double dw,bool mandel,
 					y = valy;
 					mag = magnitude(x,y);
 					if(fabs(mag) > 2){
-						r = getR(i);
-						g = getG(i);
-						b = getB(i);
+						r = getR(i,cmode);
+						g = getG(i,cmode);
+						b = getB(i,cmode);
 						i = iters;
 					}
 				}
@@ -81,9 +86,9 @@ void displayFractal(Mat img,double lf,double rg,double up,double dw,bool mandel,
 					y = valy;
 					mag = magnitude(x,y);
 					if(fabs(mag) > 2){
-						r = getR(i);
-						g = getG(i);
-						b = getB(i);
+						r = getR(i,cmode);
+						g = getG(i,cmode);
+						b = getB(i,cmode);
 						i = iters;
 					}
 				}
@@ -139,6 +144,9 @@ int main(int argc,char** argv){
 	int sqX = 0;
 	int sqY = 0;
 	int sqW = 0;
+
+	int colorMode = 0;
+
 	bool drawSq = false;
 
 	int iterNum = 100;
@@ -157,7 +165,7 @@ int main(int argc,char** argv){
 	while(true){
 		Mat img(imWidth,imHeight,CV_8UC3);
 	
-		displayFractal(img,lf,rg,up,dw,mandel,iterNum,cX,cY);	
+		displayFractal(img,lf,rg,up,dw,mandel,iterNum,cX,cY,colorMode);	
 	
 		while(true){
 			Mat disp = img.clone();
@@ -212,6 +220,10 @@ int main(int argc,char** argv){
 				} else {
 					mandel = true;
 				}
+				break;
+			}
+			if(c == 'n'){
+				colorMode = (colorMode + 1) % 4;
 				break;
 			}
 			if(c == 'q'){
