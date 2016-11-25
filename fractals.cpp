@@ -123,10 +123,10 @@ int main(int argc,char** argv){
 
 	int imWidth = 640;
 	int imHeight = 640;
-	double cX = -.79;
-	//double cX = 0;
-	double cY = 0.15;
-//	double cY = 0;
+	//double cX = -0.3482 //Whirlygoo
+	double cX = -.79; //fancydance
+	//double cY = 0.6108 //Whirlygoo
+	double cY = 0.15; //fancydance
 	double lf = -2;
 	double rg = 2;//-2;
 	double up = 2;
@@ -189,6 +189,11 @@ int main(int argc,char** argv){
 				//cY = 0;
 				break;
 			}
+			if(c == '0'){
+				cX = 0;
+				cY = 0;
+				break;
+			}
 			if(c == 'r'){
 				cX = (-5000 + (rand() % 10000))/5000.0;
 				cY = (-5000 + (rand() % 10000))/5000.0;
@@ -197,6 +202,24 @@ int main(int argc,char** argv){
 			}
 			if(c == 'c'){
 				drawSq = false;
+			}
+			if(c == 'm'){
+				if(mandel == true){
+					mandel = false;
+				} else {
+					mandel = true;
+				}
+				break;
+			}
+			if(c == 'q'){
+				lf = -2;
+				rg = 2;
+				up = 2;
+				dw = -2;
+				iterNum = 100;
+				//cX = 0;
+				//cY = 0;
+				break;
 			}
 			//Check mouse
 			if(mouse[2] == EVENT_LBUTTONDOWN){
@@ -217,7 +240,7 @@ int main(int argc,char** argv){
 					up = nup;
 					dw = ndw;
 					sqW = 0;
-					if(!mandel){
+					//if(!mandel){
 						nlf = getComplexCoord(img.cols,0,lf,rg);
 						nrg = getComplexCoord(img.cols,img.cols,lf,rg);
 						nup = -getComplexCoord(img.rows,img.rows,dw,up);
@@ -226,7 +249,7 @@ int main(int argc,char** argv){
 						rg = nrg;
 						up = nup;
 						dw = ndw;	
-					}
+					//}
 					break;
 				}
 			} else if(mouse[2] == EVENT_MOUSEMOVE){
