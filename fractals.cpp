@@ -104,7 +104,10 @@ void mouseFunc(int event, int x, int y, int flags,void * mouse){
 		*(m + 1) = y;
 		*(m + 2) = EVENT_LBUTTONDOWN;
 	} else if (event == EVENT_RBUTTONDOWN) {
-		//std::cout << "Right button of the mouse is clicked - position (" << x << ", " << y << ")\n";
+		*m = x;
+		*(m + 1) = y;
+		*(m + 2) = EVENT_RBUTTONDOWN;
+
 	} else if (event == EVENT_MBUTTONDOWN) {
 		//std::cout << "Middle button of the mouse is clicked - position (" << x << ", " << y << ")\n";
 	} else if (event == EVENT_MOUSEMOVE) {
@@ -239,17 +242,15 @@ int main(int argc,char** argv){
 					rg = nrg;
 					up = nup;
 					dw = ndw;
+					nlf = getComplexCoord(img.cols,0,lf,rg);
+					nrg = getComplexCoord(img.cols,img.cols,lf,rg);
+					nup = -getComplexCoord(img.rows,img.rows,dw,up);
+					ndw = -getComplexCoord(img.rows,0,dw,up);
+					lf = nlf;
+					rg = nrg;
+					up = nup;
+					dw = ndw;	
 					sqW = 0;
-					//if(!mandel){
-						nlf = getComplexCoord(img.cols,0,lf,rg);
-						nrg = getComplexCoord(img.cols,img.cols,lf,rg);
-						nup = -getComplexCoord(img.rows,img.rows,dw,up);
-						ndw = -getComplexCoord(img.rows,0,dw,up);
-						lf = nlf;
-						rg = nrg;
-						up = nup;
-						dw = ndw;	
-					//}
 					break;
 				}
 			} else if(mouse[2] == EVENT_MOUSEMOVE){
@@ -260,6 +261,25 @@ int main(int argc,char** argv){
 					sqW = hW;
 					if(vW > hW) sqW = vW;
 				}
+			} else if(mouse[2] == EVENT_RBUTTONDOWN){
+				mouse[2] = -1;
+				double nlf = getComplexCoord(img.cols,-img.cols,lf,rg);
+				double nrg = getComplexCoord(img.cols,2*img.cols,lf,rg);
+				double ndw = -getComplexCoord(img.rows,-img.rows,dw,up);
+				double nup = -getComplexCoord(img.rows,2*img.rows,dw,up);
+				lf = nlf;
+				rg = nrg;
+				up = nup;
+				dw = ndw;
+				nlf = getComplexCoord(img.cols,0,lf,rg);
+				nrg = getComplexCoord(img.cols,img.cols,lf,rg);
+				nup = -getComplexCoord(img.rows,img.rows,dw,up);
+				ndw = -getComplexCoord(img.rows,0,dw,up);
+				lf = nlf;
+				rg = nrg;
+				up = nup;
+				dw = ndw;	
+				break;
 			}
 		}
 		//if(randomize){
