@@ -42,15 +42,15 @@ double magnitude(double x,double y){
 }
 
 char getR(int num){
-	return (num % 10) * (255/10);
+	return (num % 127) * (255/127);
 }
 
 char getG(int num){
-	return (num % 12) * (255/12);
+	return (num % 63) * (255/63);
 }
 
 char getB(int num){
-	return (num % 14) * (255/14);
+	return (num % 31) * (255/31);
 }
 
 int main(int argc,char** argv){
