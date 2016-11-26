@@ -53,7 +53,7 @@ double getComplexCoord(double imgLen,int imgCoord, double low, double high){
 	return low - (imgCoord/imgLen) * (low - high);
 }
 
-void displayFractal(Mat img,double lf,double rg,double up,double dw,bool mandel,int iters,double cx, double cy,int cmode){
+void displayFractal(Mat img,double lf,double rg,double up,double dw,bool mandel,int iters,double cx, double cy,int cmode,int power){
 	double tx = cx;
 	double ty = cy;
 	for(double i = 0;i < img.rows;i++){
@@ -74,10 +74,18 @@ void displayFractal(Mat img,double lf,double rg,double up,double dw,bool mandel,
 			}
 
 			for(int i = 0;i < iters;i++){
-				double valx = calcReal(x,y,x,y) + cx;
-				double valy = calcImag(x,y,x,y) + cy;
-				x = valx;
-				y = valy;
+				double valx = calcReal(x,y,x,y);
+				double valy = calcImag(x,y,x,y);
+				for(int i = 2;i < power;i++){
+					double tempx = calcReal(valx,valy,x,y);
+					double tempy = calcImag(valx,valy,x,y);
+					valx = tempx;
+					valy = tempy;
+				}
+				
+				x = valx + cx;
+				y = valy + cy;
+				
 				mag = magnitude(x,y);
 				if(fabs(mag) > 2){
 					r = getR(i,cmode);
@@ -133,7 +141,9 @@ int main(int argc,char** argv){
 	double rg = 2;//-2;
 	double up = 2;
 	double dw = -2;//-2;
+	int order = 2;
 
+	double speed = 0.001;
 
 	int sqX = 0;
 	int sqY = 0;
@@ -159,7 +169,7 @@ int main(int argc,char** argv){
 	while(true){
 		Mat img(imWidth,imHeight,CV_8UC3);
 	
-		displayFractal(img,lf,rg,up,dw,mandel,iterNum,cX,cY,colorMode);	
+		displayFractal(img,lf,rg,up,dw,mandel,iterNum,cX,cY,colorMode,order);	
 	
 		while(true){
 			Mat disp = img.clone();
@@ -228,6 +238,30 @@ int main(int argc,char** argv){
 				iterNum = 100;
 				//cX = 0;
 				//cY = 0;
+				break;
+			}
+			if(c == '6'){
+				order++;
+				break;
+			}
+			if(c == '5'){
+				order--;
+				break;
+			}
+			if(c == 'w'){
+				cY -= speed;
+				break;
+			}
+			if(c == 's'){
+				cY += speed;
+				break;
+			}
+			if(c == 'd'){
+				cX += speed;
+				break;
+			}
+			if(c == 'a'){
+				cX -= speed;
 				break;
 			}
 			//Check mouse
