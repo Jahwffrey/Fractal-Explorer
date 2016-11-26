@@ -71,36 +71,22 @@ void displayFractal(Mat img,double lf,double rg,double up,double dw,bool mandel,
 				cy = y;
 				x = tx;
 				y = ty;
+			}
 
-
-				for(int i = 0;i < iters;i++){
-					double valx = calcReal(x,y,x,y) + cx;
-					double valy = calcImag(x,y,x,y) + cy;
-					x = valx;
-					y = valy;
-					mag = magnitude(x,y);
-					if(fabs(mag) > 2){
-						r = getR(i,cmode);
-						g = getG(i,cmode);
-						b = getB(i,cmode);
-						i = iters;
-					}
-				}
-			} else {
-				for(int i = 0;i < iters;i++){
-					double valx = calcReal(x,y,x,y) + cx;
-					double valy = calcImag(x,y,x,y) + cy;
-					x = valx;
-					y = valy;
-					mag = magnitude(x,y);
-					if(fabs(mag) > 2){
-						r = getR(i,cmode);
-						g = getG(i,cmode);
-						b = getB(i,cmode);
-						i = iters;
-					}
+			for(int i = 0;i < iters;i++){
+				double valx = calcReal(x,y,x,y) + cx;
+				double valy = calcImag(x,y,x,y) + cy;
+				x = valx;
+				y = valy;
+				mag = magnitude(x,y);
+				if(fabs(mag) > 2){
+					r = getR(i,cmode);
+					g = getG(i,cmode);
+					b = getB(i,cmode);
+					i = iters;
 				}
 			}
+			
 			Vec3b final = img.at<Vec3b>(i,j);
 			final[0] = b;
 			final[1] = g;
