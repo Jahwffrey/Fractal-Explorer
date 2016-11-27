@@ -8,6 +8,7 @@
 #include <time.h>
 
 #define PI 3.141592
+#define LEAFMODE false
 
 using namespace cv;
 
@@ -20,7 +21,8 @@ double calcImag(double x,double y,double x2, double y2){
 }
 
 double magnitude(double x,double y){
-	return sqrt(pow(x,2) - pow(y,2));
+	if(LEAFMODE) return sqrt(pow(x,2) - pow(y,2));
+	return sqrt(pow(x,2) + pow(y,2));
 }
 
 char getR(int num,int mode){
