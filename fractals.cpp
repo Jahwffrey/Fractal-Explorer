@@ -12,12 +12,10 @@
 using namespace cv;
 
 double calcReal(double x,double y,double x2,double y2){
-	//return pow(x,2) - pow(y,2);
 	return (x * x2) - (y * y2);
 }
 
 double calcImag(double x,double y,double x2, double y2){
-	//return 2 * x * y;
 	return (x * y2) + (y * x2); 
 }
 
@@ -78,21 +76,17 @@ int getPoint(int iters,double x,double y,double cx, double cy,int power){
 }
 
 void displayFractal(Mat img,double lf,double rg,double up,double dw,bool mandel,int iters,double cx, double cy,int cmode,int power){
-	double tx = cx;
-	double ty = cy;
 	for(double i = 0;i < img.rows;i++){
 		for(double j = 0;j < img.cols;j++){
 			double x = getComplexCoord(img.cols,j,lf,rg);//rg - (i / img.rows) * (rg - lf);
 			double y = -getComplexCoord(img.rows,i,dw,up);//dw - (j /img.cols) * (dw - up);
-
-			if(mandel){
-				cx = x;
-				cy = y;
-				x = tx;
-				y = ty;
+			
+			int it;
+			if(mandel) {
+				it = getPoint(iters,cx,cy,x,y,power);
+			} else {
+				it = getPoint(iters,x,y,cx,cy,power);
 			}
-
-			int it = getPoint(iters,x,y,cx,cy,power);
 
 			Vec3b final = img.at<Vec3b>(i,j);
 			final[0] = getB(it,cmode);
