@@ -56,6 +56,9 @@ double getComplexCoord(double imgLen,int imgCoord, double low, double high){
 
 int getPoint(int iters,double x,double y,double cx, double cy,int power){
 	for(int i = 0;i < iters;i++){
+		if(fabs(magnitude(x,y)) >= 2){
+			return i;
+		}
 		double valx = calcReal(x,y,x,y);
 		double valy = calcImag(x,y,x,y);
 		for(int i = 2;i < power;i++){
@@ -67,25 +70,30 @@ int getPoint(int iters,double x,double y,double cx, double cy,int power){
 	
 		x = valx + cx;
 		y = valy + cy;
-	
-		if(fabs(magnitude(x,y)) >= 2){
-			return i;
-		}
 	}
 	return -1;
 }
 
-void displayFractal(Mat img,double lf,double rg,double up,double dw,bool mandel,int iters,double cx, double cy,int cmode,int power){
+void displayFractal(Mat img,double lf,double rg,double up,double dw,int iterMode,int iters,double cx, double cy,int cmode,int power){
 	for(double i = 0;i < img.rows;i++){
 		for(double j = 0;j < img.cols;j++){
 			double x = getComplexCoord(img.cols,j,lf,rg);//rg - (i / img.rows) * (rg - lf);
 			double y = -getComplexCoord(img.rows,i,dw,up);//dw - (j /img.cols) * (dw - up);
 			
 			int it;
-			if(mandel) {
-				it = getPoint(iters,cx,cy,x,y,power);
-			} else {
-				it = getPoint(iters,x,y,cx,cy,power);
+			switch(iterMode){
+				case 0: //julia
+					it = getPoint(iters,x,y,cx,cy,power);
+					break;
+				case 1: //mandelbrot
+					it = getPoint(iters,cx,cy,x,y,power);
+					break;
+				case 2: //reals
+					it = getPoint(iters,x,cx,y,cy,power);
+					break;
+				case 3: //imaginary
+					it = getPoint(iters,cx,x,cy,y,power);
+					break;
 			}
 
 			Vec3b final = img.at<Vec3b>(i,j);
@@ -120,7 +128,7 @@ void mouseFunc(int event, int x, int y, int flags,void * mouse){
 int main(int argc,char** argv){
 	bool cycle = false;
 	bool smallize = true;
-	bool mandel = false;
+	int mandel = 0;
 
 	int mouse[3] = {0,0,-1};
 
@@ -136,7 +144,7 @@ int main(int argc,char** argv){
 	double dw = -2;//-2;
 	int order = 2;
 
-	double speed = 0.001;
+	double speed = 0.01;
 
 	int sqX = 0;
 	int sqY = 0;
@@ -147,6 +155,7 @@ int main(int argc,char** argv){
 	bool drawSq = false;
 
 	int iterNum = 100;
+	int iterMode = 0;
 
 	if(cycle && smallize){
 		imWidth /= 4;
@@ -212,11 +221,7 @@ int main(int argc,char** argv){
 				drawSq = false;
 			}
 			if(c == 'm'){
-				if(mandel == true){
-					mandel = false;
-				} else {
-					mandel = true;
-				}
+				mandel = (mandel + 1) % 4;
 				break;
 			}
 			if(c == 'n'){
