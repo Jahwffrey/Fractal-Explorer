@@ -320,33 +320,6 @@ int main(int argc,char** argv){
 				break;
 			}
 		}
-		//if(randomize){
-			
-			//tx = cx;
-			//ty = cy;
-		//}
-
-		//if(cycle){
-			//if(mandelbrot){
-				//ty += speed;
-				//if(ty > 2){
-				//	ty = -2;
-				//	tx += speed;
-				//}
-				//if(tx > 2){
-				//	tx = -2;
-				//}
-			//} else {
-		//		cx += speed;
-		//		if(cx > 2){
-		//			cx = -2;
-		//			cy += speed;
-		//		}
-		//		if(cy > 2){
-		//			cy = -2;
-		//		}
-			//}
-		//}
 	}
 
 	return 0;
