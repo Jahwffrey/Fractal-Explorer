@@ -8,7 +8,6 @@
 #include <time.h>
 
 #define PI 3.141592
-#define LEAFMODE false
 
 using namespace cv;
 
@@ -20,8 +19,8 @@ double calcImag(double x,double y,double x2, double y2){
 	return (x * y2) + (y * x2); 
 }
 
-double magnitude(double x,double y){
-	if(LEAFMODE) return sqrt(pow(x,2) - pow(y,2));
+double magnitude(double x,double y, int mode){
+	if(mode == 1) return sqrt(pow(x,2) - pow(y,2));
 	return sqrt(pow(x,2) + pow(y,2));
 }
 
@@ -56,9 +55,9 @@ double getComplexCoord(double imgLen,int imgCoord, double low, double high){
 	return low - (imgCoord/imgLen) * (low - high);
 }
 
-int getPoint(int iters,double x,double y,double cx, double cy,int power){
+int getPoint(int iters,double x,double y,double cx, double cy,int power,int magMode){
 	for(int i = 0;i < iters;i++){
-		if(fabs(magnitude(x,y)) >= 2){
+		if(fabs(magnitude(x,y,magMode)) >= 2){
 			return i;
 		}
 		double valx = calcReal(x,y,x,y);
@@ -76,7 +75,7 @@ int getPoint(int iters,double x,double y,double cx, double cy,int power){
 	return -1;
 }
 
-void displayFractal(Mat img,double lf,double rg,double up,double dw,int iterMode,int iters,double cx, double cy,int cmode,int power){
+void displayFractal(Mat img,double lf,double rg,double up,double dw,int iterMode,int iters,double cx, double cy,int cmode,int power,int magMode){
 	for(double i = 0;i < img.rows;i++){
 		for(double j = 0;j < img.cols;j++){
 			double x = getComplexCoord(img.cols,j,lf,rg);//rg - (i / img.rows) * (rg - lf);
@@ -85,16 +84,16 @@ void displayFractal(Mat img,double lf,double rg,double up,double dw,int iterMode
 			int it;
 			switch(iterMode){
 				case 0: //julia
-					it = getPoint(iters,x,y,cx,cy,power);
+					it = getPoint(iters,x,y,cx,cy,power,magMode);
 					break;
 				case 1: //mandelbrot
-					it = getPoint(iters,cx,cy,x,y,power);
+					it = getPoint(iters,cx,cy,x,y,power,magMode);
 					break;
 				case 2: //reals
-					it = getPoint(iters,x,cx,y,cy,power);
+					it = getPoint(iters,x,cx,y,cy,power,magMode);
 					break;
 				case 3: //imaginary
-					it = getPoint(iters,cx,x,cy,y,power);
+					it = getPoint(iters,cx,x,cy,y,power,magMode);
 					break;
 			}
 
@@ -158,6 +157,7 @@ int main(int argc,char** argv){
 
 	int iterNum = 100;
 	int iterMode = 0;
+	int magMode = 0;
 
 	if(cycle && smallize){
 		imWidth /= 4;
@@ -173,7 +173,7 @@ int main(int argc,char** argv){
 	while(true){
 		Mat img(imWidth,imHeight,CV_8UC3);
 	
-		displayFractal(img,lf,rg,up,dw,mandel,iterNum,cX,cY,colorMode,order);	
+		displayFractal(img,lf,rg,up,dw,mandel,iterNum,cX,cY,colorMode,order,magMode);	
 	
 		while(true){
 			Mat disp = img.clone();
@@ -228,6 +228,10 @@ int main(int argc,char** argv){
 			}
 			if(c == 'n'){
 				colorMode = (colorMode + 1) % 5;
+				break;
+			}
+			if(c == 'b'){
+				magMode = (magMode  + 1) % 2;
 				break;
 			}
 			if(c == 'q'){
