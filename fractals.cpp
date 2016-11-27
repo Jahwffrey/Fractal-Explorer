@@ -26,6 +26,7 @@ double magnitude(double x,double y){
 }
 
 char getR(int num,int mode){
+	if(num == -1) return 0;
 	if(mode == 0) return (num % 127) * (255/127);
 	if(mode == 1) return (tan((double)num/16) + 1) * 127;
 	if(mode == 2) return 255 * ((sin((double)num*PI/64) + 1)/2.0);
@@ -34,6 +35,7 @@ char getR(int num,int mode){
 }
 
 char getG(int num,int mode){
+	if(num == -1) return 0;
 	if(mode == 0) return (num % 63) * (255/63);
 	if(mode == 1) return (sin((double)num/16) + 1) * 127;
 	if(mode == 2) return 255 * ((sin((double)num*PI/64 + ((2/3.0)*PI) ) + 1)/2.0);
@@ -42,6 +44,7 @@ char getG(int num,int mode){
 }
 
 char getB(int num,int mode){
+	if(num == -1) return 0;
 	if(mode == 0) return (num % 31) * (255/31);
 	if(mode == 1) return (cos((double)num/16) + 1) * 127;
 	if(mode == 2) return 255 * ((sin((double)num*PI/64 + ((4/3.0)*PI) ) + 1)/2.0);
@@ -53,6 +56,27 @@ double getComplexCoord(double imgLen,int imgCoord, double low, double high){
 	return low - (imgCoord/imgLen) * (low - high);
 }
 
+int getPoint(int iters,double x,double y,double cx, double cy,int power){
+	for(int i = 0;i < iters;i++){
+		double valx = calcReal(x,y,x,y);
+		double valy = calcImag(x,y,x,y);
+		for(int i = 2;i < power;i++){
+			double tempx = calcReal(valx,valy,x,y);
+			double tempy = calcImag(valx,valy,x,y);
+			valx = tempx;
+			valy = tempy;
+		}
+	
+		x = valx + cx;
+		y = valy + cy;
+	
+		if(fabs(magnitude(x,y)) >= 2){
+			return i;
+		}
+	}
+	return -1;
+}
+
 void displayFractal(Mat img,double lf,double rg,double up,double dw,bool mandel,int iters,double cx, double cy,int cmode,int power){
 	double tx = cx;
 	double ty = cy;
@@ -61,11 +85,6 @@ void displayFractal(Mat img,double lf,double rg,double up,double dw,bool mandel,
 			double x = getComplexCoord(img.cols,j,lf,rg);//rg - (i / img.rows) * (rg - lf);
 			double y = -getComplexCoord(img.rows,i,dw,up);//dw - (j /img.cols) * (dw - up);
 
-			double mag = 0;
-			char r = 0;
-			char g = 0;
-			char b = 0;
-
 			if(mandel){
 				cx = x;
 				cy = y;
@@ -73,32 +92,12 @@ void displayFractal(Mat img,double lf,double rg,double up,double dw,bool mandel,
 				y = ty;
 			}
 
-			for(int i = 0;i < iters;i++){
-				double valx = calcReal(x,y,x,y);
-				double valy = calcImag(x,y,x,y);
-				for(int i = 2;i < power;i++){
-					double tempx = calcReal(valx,valy,x,y);
-					double tempy = calcImag(valx,valy,x,y);
-					valx = tempx;
-					valy = tempy;
-				}
-				
-				x = valx + cx;
-				y = valy + cy;
-				
-				mag = magnitude(x,y);
-				if(fabs(mag) > 2){
-					r = getR(i,cmode);
-					g = getG(i,cmode);
-					b = getB(i,cmode);
-					i = iters;
-				}
-			}
-			
+			int it = getPoint(iters,x,y,cx,cy,power);
+
 			Vec3b final = img.at<Vec3b>(i,j);
-			final[0] = b;
-			final[1] = g;
-			final[2] = r;
+			final[0] = getB(it,cmode);
+			final[1] = getG(it,cmode);
+			final[2] = getR(it,cmode);
 			img.at<Vec3b>(i,j) = final;
 		}
 	}
