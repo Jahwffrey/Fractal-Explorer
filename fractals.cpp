@@ -11,6 +11,11 @@
 
 using namespace cv;
 
+bool buddhaBool = false;
+bool flamingship = true;
+int colorDelt = 0;
+Mat buddha(640,640,CV_8UC1);
+
 double calcReal(double x,double y,double x2,double y2){
 	return (x * x2) - (y * y2);
 }
@@ -26,6 +31,7 @@ double magnitude(double x,double y, int mode){
 
 char getR(int num,int mode){
 	if(num == -1) return 0;
+	num = (num + colorDelt) % 255;
 	if(mode == 0) return (num % 127) * (255/127);
 	if(mode == 1) return (tan((double)num/16) + 1) * 127;
 	if(mode == 2) return 255 * ((sin((double)num*PI/64) + 1)/2.0);
@@ -35,6 +41,7 @@ char getR(int num,int mode){
 
 char getG(int num,int mode){
 	if(num == -1) return 0;
+	num = (num + colorDelt) % 255;
 	if(mode == 0) return (num % 63) * (255/63);
 	if(mode == 1) return (sin((double)num/16) + 1) * 127;
 	if(mode == 2) return 255 * ((sin((double)num*PI/64 + ((2/3.0)*PI) ) + 1)/2.0);
@@ -44,6 +51,7 @@ char getG(int num,int mode){
 
 char getB(int num,int mode){
 	if(num == -1) return 0;
+	num = (num + colorDelt) % 255;
 	if(mode == 0) return (num % 31) * (255/31);
 	if(mode == 1) return (cos((double)num/16) + 1) * 127;
 	if(mode == 2) return 255 * ((sin((double)num*PI/64 + ((4/3.0)*PI) ) + 1)/2.0);
@@ -56,28 +64,78 @@ double getComplexCoord(double imgLen,int imgCoord, double low, double high){
 }
 
 int getPoint(int iters,double x,double y,double cx, double cy,int power,int magMode){
+	double tx = x;
+	double ty = y;
+
 	for(int i = 0;i < iters;i++){
 		if(fabs(magnitude(x,y,magMode)) >= 2){
-			return i;
+			if(!buddhaBool){
+				return i;
+			} else {
+				x = tx;
+				y = ty;
+				for(int j = 0;j < iters;j++){
+				
+					int bX = (x + 2.0) * ((double)buddha.cols/4.0);
+					int bY = buddha.rows - (y + 2.0) * ((double)buddha.rows/4.0);
+					//std::cout << "(" << bX << "," << bY << ")\n";
+					int val = buddha.at<uchar>(bY,bX);
+					val += 15;
+					if(val > 255) val = 255;
+					buddha.at<uchar>(bY,bX) = val;
+	
+					double valx = calcReal(x,y,x,y);
+					double valy = calcImag(x,y,x,y);
+					for(int k = 2;k < power;k++){
+						double tempx = calcReal(valx,valy,x,y);
+						double tempy = calcImag(valx,valy,x,y);
+						valx = tempx;
+						valy = tempy;
+					}
+				
+					if(flamingship){
+						x = fabs(valx + cx);
+						y = fabs(valy + cy);
+					} else {
+						x = valx + cx;
+						y = valy + cy;
+					}
+
+					if(fabs(magnitude(x,y,magMode)) >= 2){
+						return j;
+					}	
+				}	
+				
+			}
 		}
 		double valx = calcReal(x,y,x,y);
 		double valy = calcImag(x,y,x,y);
-		for(int i = 2;i < power;i++){
+		for(int k = 2;k < power;k++){
 			double tempx = calcReal(valx,valy,x,y);
 			double tempy = calcImag(valx,valy,x,y);
 			valx = tempx;
 			valy = tempy;
 		}
-	
-		x = valx + cx;
-		y = valy + cy;
+		if(flamingship){
+			x = fabs(valx + cx);
+			y = fabs(valy + cy);
+		} else {
+			x = valx + cx;
+			y = valy + cy;
+		}
 	}
+
 	return -1;
 }
 
 void displayFractal(Mat img,double lf,double rg,double up,double dw,int iterMode,int iters,double cx, double cy,int cmode,int power,int magMode){
 	for(double i = 0;i < img.rows;i++){
 		for(double j = 0;j < img.cols;j++){
+			
+			if(buddhaBool){
+				buddha.at<char>(i,j) = 0;
+			}
+			
 			double x = getComplexCoord(img.cols,j,lf,rg);//rg - (i / img.rows) * (rg - lf);
 			double y = -getComplexCoord(img.rows,i,dw,up);//dw - (j /img.cols) * (dw - up);
 			
@@ -126,6 +184,73 @@ void mouseFunc(int event, int x, int y, int flags,void * mouse){
 	}
 }
 
+int doesLineCollideSet(float delt,int iters,float sx,float sy,float sz,float sw,float ex,float ey,float ez,float ew){
+	float dist = sqrt(pow(sx - ex,2) + pow(sy - ey,2) + pow(sz - ez,2) + pow(sw - ew,2));
+	float dx = -(sx - ex)/delt;
+	float dy = -(sy - ey)/delt;
+	float dz = -(sz - ez)/delt;
+	float dw = -(sw - ew)/delt;
+	
+	for(int i = 0;i < delt;i++){
+		float cx = sx + i*dx;
+		float cy = sy + i*dy;
+		float cz = sz + i*dz;
+		float cw = sw + i*dw;
+		int pt = getPoint(iters,cx,cy,cz,cw,2,0);
+		if(pt == -1) return i;
+	}
+	return -1;
+}
+
+void raymarch3DFractal(Mat img,float scrnW, float scrnH, float delt, int iters, float x,float y,float z,float w){
+
+	//First, find the normal vector to my plane as being at the center defined by parameters and pointing towards center
+
+	//if we always look at 0,0,0,0, the vector pointng from me to the center is merely negative the center
+	float len = sqrt(x*x + y*y + z*z + w*w);
+			
+	//a unit vector pointing from me to the center
+	float ux = -x/len;
+	float uy = -y/len;
+	float uz = -z/len;
+	float uw = -w/len;
+
+	for(double i = 0;i < img.rows;i++){
+		for(double j = 0;j < img.cols;j++){
+			//this is the two dimensional coordinate of the point within the plane
+			float px1 = ((i/img.rows) - 0.5) * 4;//* scrnW;
+			float py1 = ((j/img.cols) - 0.5) * 4;//((j - img.cols/2)/(img.cols/2)) * scrnH;
+			float pz1 = -2;
+			float pw1 = -2;
+
+			float px2 = px1;
+			float py2 = py1;
+			float pz2 = 2;
+			float pw2 = 2;
+
+
+
+
+			//I have a point in two dimensions withing a plane that exists in four dimensions
+			//I need to find the four dimensional location of this point
+
+			//ux(nx - x) + ... + = 0
+			
+			//int coll = doesLineCollideSet(delt,iters,x + relI,y + relJ,z,2,x+relI,y + relJ,z,-2);
+			int coll = doesLineCollideSet(delt,iters,px1,py1,pz1,pw1,px2,py2,pz2,pw2);
+			int pColor = 255;
+			if(coll != -1){
+				pColor = 255 - (255 * ((float)coll/delt));
+			}
+			Vec3b final = img.at<Vec3b>(i,j);
+			final[0] = pColor;
+			final[1] = pColor;
+			final[2] = pColor;
+			img.at<Vec3b>(i,j) = final;
+		}
+	}		
+}
+
 int main(int argc,char** argv){
 	bool cycle = false;
 	bool smallize = true;
@@ -136,9 +261,11 @@ int main(int argc,char** argv){
 	int imWidth = 640;
 	int imHeight = 640;
 	//double cX = -0.3482 //Whirlygoo
-	double cX = -.79; //fancydance
+	double cX = -0.778;//-.79; //fancydance
+	//double cX = 0; //fancydance
 	//double cY = 0.6108 //Whirlygoo
-	double cY = 0.15; //fancydance
+	double cY = -0.116;//0.15; //fancydance
+	//double cY = 0; //fancydance
 	double lf = -2;
 	double rg = 2;//-2;
 	double up = 2;
@@ -170,9 +297,13 @@ int main(int argc,char** argv){
 	srand(time(NULL));
 
 
+	//Mat firstImg(imWidth,imHeight,CV_8UC3);
+	//raymarch3DFractal(firstImg,4,4, 100,32, 0,0,0,2);
+	//imshow("More Fractal",firstImg);
+	
 	while(true){
 		Mat img(imWidth,imHeight,CV_8UC3);
-	
+
 		displayFractal(img,lf,rg,up,dw,mandel,iterNum,cX,cY,colorMode,order,magMode);	
 	
 		while(true){
@@ -183,6 +314,16 @@ int main(int argc,char** argv){
 			}
 
 			imshow("Fractal",disp);
+			if(buddhaBool){
+				imshow("Buddha",buddha);
+			}
+			/*for(int l = 0;l < 120;l++){
+				for(int ll = 0;ll < 120;ll++){
+					std::cout << "[" << buddha.at<char>(l,ll) << "]";
+				}
+				std::cout << std::endl;
+			}*/
+
 			char c = waitKey(5);
 			if(c == '1'){
 				iterNum+=5;
@@ -250,6 +391,10 @@ int main(int argc,char** argv){
 			}
 			if(c == '5'){
 				order--;
+				break;
+			}
+			if(c == '7'){
+				colorDelt += 1;
 				break;
 			}
 			if(c == 'w'){
